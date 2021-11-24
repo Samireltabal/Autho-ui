@@ -56,7 +56,7 @@
                   label="Name"
                   placeholder="John doe"
                   :error="handleValidationErrors('name').has_error"
-                  :error-messages="handleValidationErrors('name').has_error ? handleValidationErrors('password').message : ''"
+                  :error-messages="handleValidationErrors('name').has_error ? handleValidationErrors('name').message : ''"
                   hide-details
                   class="mb-3"
                 />
@@ -68,7 +68,7 @@
                   label="Phone"
                   placeholder="01553655555"
                   :error="handleValidationErrors('phone').has_error"
-                  :error-messages="handleValidationErrors('phone').has_error ? handleValidationErrors('password').message : ''"
+                  :error-messages="handleValidationErrors('phone').has_error ? handleValidationErrors('phone').message : ''"
                   hide-details
                   class="mb-3"
                 />
@@ -80,7 +80,7 @@
                   label="Email"
                   placeholder="john@example.com"
                   :error="handleValidationErrors('email').has_error"
-                  :error-messages="handleValidationErrors('email').has_error ? handleValidationErrors('password').message : ''"
+                  :error-messages="handleValidationErrors('email').has_error ? handleValidationErrors('email').message : ''"
                   hide-details
                   class="mb-3"
                 />

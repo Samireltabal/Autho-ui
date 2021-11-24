@@ -24,7 +24,18 @@
                 </h2>
               </router-link>
             </v-card-title>
-
+            <v-card-text v-if="Errors">
+              <v-alert
+                v-for="(error, key) in Errors"
+                :key="key"
+                color="error"
+                dense
+                dark
+                icon="mdi-information-outline"
+              >
+                {{ handleValidationErrors(key).message[0] }}
+              </v-alert>
+            </v-card-text>
             <!-- title -->
             <v-card-text>
               <p class="text-2xl font-weight-semibold text--primary mb-2">
@@ -41,8 +52,10 @@
                 <v-text-field
                   v-model="login"
                   outlined
-                  label="Email"
+                  label="Login"
                   placeholder="john@example.com"
+                  :error="handleValidationErrors('login').has_error"
+                  :error-messages="handleValidationErrors('login').has_error ? handleValidationErrors('login').message : ''"
                   hide-details
                   class="mb-3"
                 />
@@ -53,6 +66,8 @@
                   :type="isPasswordVisible ? 'text' : 'password'"
                   label="Password"
                   placeholder="············"
+                  :error="handleValidationErrors('password').has_error"
+                  :error-message="handleValidationErrors('password').has_error ? handleValidationErrors('password').message : ''"
                   :append-icon="isPasswordVisible ? 'mdi-eye-off-outline' : 'mdi-eye-outline'"
                   hide-details
                   @click:append="isPasswordVisible = !isPasswordVisible"
@@ -129,6 +144,7 @@ export default {
     return {
       login: null,
       password: null,
+      Errors: [],
       isPasswordVisible: false,
       socialLink: [
         {
@@ -154,24 +170,30 @@ export default {
   },
   methods: {
     async userLogin () {
-      try {
-        await this.$auth.loginWith('laravelJWT', { data: { login: this.login, password: this.password } }).then((response) => {
-          this.$auth.setUserToken(response.data.access_token).then(() => {
-            this.$axios.setToken(response.data.access_token, 'Bearer')
-            this.$store.dispatch('login')
-            this.$store.dispatch('setToken', response.data.access_token)
-            this.$store.dispatch('setUser', response.data.user_data)
-          })
-          this.$auth.setUser(response.data.user_data)
-        }).catch((err) => {
-          this.$toast.error(err.response.data.message)
-        }).finally(() => {
-          // this.$auth.fetchUser()
+      await this.$auth.loginWith('laravelJWT', { data: { login: this.login, password: this.password } }).then((response) => {
+        this.$auth.setUserToken(response.data.access_token).then(() => {
+          this.$axios.setToken(response.data.access_token, 'Bearer')
+          this.$store.dispatch('login')
+          this.$store.dispatch('setToken', response.data.access_token)
+          this.$store.dispatch('setUser', response.data.user_data)
         })
-        // console.log(response)
-      } catch (err) {
-
+        this.$auth.setUser(response.data.user_data)
+      }).catch((err) => {
+        if (err.response.status === 401) {
+          this.Errors = [
+            [err.response.data.message]
+          ]
+        } else if (err.response.status === 422) {
+          this.Errors = err.response.data.errors
+        }
+      })
+    },
+    handleValidationErrors (name) {
+      const errorData = {
+        has_error: this.Errors[name] != null,
+        message: this.Errors[name]
       }
+      return errorData
     }
   }
 }
