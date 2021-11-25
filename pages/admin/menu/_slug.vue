@@ -4,6 +4,9 @@
       <h3>Menu Manager</h3>
     </v-col>
     <v-col cols="8">
+      <pre>
+        {{ menu }}
+      </pre>
       <v-data-table
         dense
         :items="menus"
@@ -84,6 +87,7 @@ export default {
       menu_state: null,
       menus: [],
       Errors: [],
+      menu: {},
       icons: [],
       groups: [],
       table_headers: [
@@ -97,9 +101,7 @@ export default {
   },
   async fetch () {
     this.loading = true
-    this.menus = await this.$axios.$get('/menus/list')
-    this.icons = await this.$axios.$get('/menus/icons/list')
-    this.groups = await this.$axios.$get('/menus/icons/groups/list')
+    this.menu = await this.$axios.$get(`/menus/show/${this.slug}`)
     this.loading = false
   },
   head: {
@@ -112,9 +114,13 @@ export default {
       { hid: 'description', name: 'description', content: 'Meta description' }
     ]
   },
+  computed: {
+    slug () {
+      return this.$route.params.slug
+    }
+  },
   methods: {
     addMenu () {
-      this.loading = true
       const data = {
         menu_name: this.menu_name,
         active: this.menu_state,
@@ -128,13 +134,13 @@ export default {
         this.$fetch()
       }).catch((err) => {
         this.Errors = err.response.data.errors
-      }).finally(() => {
-        this.loading = false
       })
     },
     viewItem (slug) {
-      const uri = `/admin/menu/${slug}`
-      this.$router.push(uri)
+      const uri = `/menus/show/${slug}`
+      this.$axios.get(uri).then(() => {
+        this.$fetch()
+      })
     },
     deleteItem (slug) {
       this.$swal.fire({
