@@ -3,7 +3,6 @@
     <v-navigation-drawer
       v-model="drawer"
       :mini-variant="miniVariant"
-      :clipped="clipped"
       fixed
       app
     >
@@ -30,25 +29,13 @@
       app
       flat
     >
-      <v-app-bar-nav-icon @click.stop="drawer = !drawer" />
-      <v-btn
-        icon
-        @click.stop="miniVariant = !miniVariant"
-      >
-        <v-icon>mdi-{{ `chevron-${miniVariant ? 'right' : 'left'}` }}</v-icon>
-      </v-btn>
-      <v-btn
-        icon
-        @click.stop="clipped = !clipped"
-      >
-        <v-icon>mdi-application</v-icon>
-      </v-btn>
+      <v-app-bar-nav-icon @click.stop="miniVariant = !miniVariant" />
       <v-toolbar-title v-text="title" />
       <v-spacer />
       <user-menu v-if="$auth.loggedIn" />
     </v-app-bar>
     <v-main>
-      <v-container>
+      <v-container fluid>
         <Nuxt />
       </v-container>
     </v-main>
@@ -67,10 +54,11 @@ export default {
   components: {
     UserMenu
   },
+  middleware: 'admin',
   data () {
     return {
       clipped: false,
-      drawer: false,
+      drawer: true,
       fixed: false,
       items: [
         {
@@ -82,11 +70,6 @@ export default {
           icon: 'mdi-menu',
           title: 'Menus',
           to: '/admin/menu'
-        },
-        {
-          icon: 'mdi-chart-bubble',
-          title: 'User Protected',
-          to: '/user'
         },
         {
           icon: 'mdi-login',
@@ -104,10 +87,19 @@ export default {
           to: '/'
         }
       ],
-      miniVariant: false,
-      right: true,
-      title: 'Vuetify.js'
+      miniVariant: true,
+      title: 'Admin Panel'
     }
+  },
+  head: {
+    titleTemplate: '%s - Admin Panel',
+    meta: [
+      { charset: 'utf-8' },
+      { name: 'viewport', content: 'width=device-width, initial-scale=1' },
+
+      // hid is used as unique identifier. Do not use `vmid` for it as it will not work
+      { hid: 'description', name: 'description', content: 'Meta description' }
+    ]
   },
   computed: {
     loggedIn () {
