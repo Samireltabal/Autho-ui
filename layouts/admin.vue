@@ -43,16 +43,28 @@
       :absolute="!fixed"
       app
     >
-      <span>&copy; {{ new Date().getFullYear() }} Autho App</span>
+      <v-row justify="center" no-gutters>
+        <Nav
+          navigation-name="footer-navigation-11"
+          color="indigo"
+          :text="true"
+          :rounded="true"
+        />
+        <v-col cols="12" class="text-center">
+          <span>&copy; {{ new Date().getFullYear() }} Autho App</span>
+        </v-col>
+      </v-row>
     </v-footer>
   </v-app>
 </template>
 
 <script>
 import UserMenu from '../components/Main/UserMenu.vue'
+import Nav from '../components/Navigation/Nav.vue'
 export default {
   components: {
-    UserMenu
+    UserMenu,
+    Nav
   },
   middleware: 'admin',
   data () {

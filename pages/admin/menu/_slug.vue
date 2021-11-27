@@ -1,26 +1,33 @@
 <template>
   <v-row justify="center" align="center">
     <v-col cols="12" sm="12" md="12" lg="12">
-      <h3>Menu Manager</h3>
+      <v-breadcrumbs
+        divider="/"
+        :items="[
+          {text: 'Home', disabled: false, href: '/'},
+          {text: 'Admin Panel', disabled: false, href: '/admin'},
+          {text: 'Menus', disabled: false, href: '/admin/menu'},
+          {text: menu.menu_name, disabled: true, href: '/'}
+        ]"
+      />
     </v-col>
     <v-col cols="8">
-      <pre>
-        {{ menu }}
-      </pre>
+      <v-treeview
+        :items="menu.tree"
+        item-children="children"
+        item-key="id"
+        item-text="text"
+      />
       <v-data-table
-        dense
-        :items="menus"
+        :items="menu.items"
         :headers="table_headers"
       >
         <template #[`item.options`]="{ item }">
           <v-btn icon small color="indigo" @click="viewItem(item.slug)">
-            <v-icon>mdi-eye</v-icon>
+            <v-icon>mdi-open-in-new</v-icon>
           </v-btn>
-          <v-btn icon small color="error" @click="deleteItem(item.slug)">
-            <v-icon>mdi-delete</v-icon>
-          </v-btn>
-          <v-btn icon small :color="item.active ? 'warning' : 'success'" @click="item.active ? disableItem(item.slug) : enableItem(item.slug)">
-            <v-icon>mdi-publish-off</v-icon>
+          <v-btn small color="error" @click="deleteItem(item.id)">
+            <v-icon>mdi-link-variant-remove</v-icon> {{ item.id }}
           </v-btn>
         </template>
       </v-data-table>
@@ -29,42 +36,87 @@
       <h3 class="my-2">
         Create New Menu
       </h3>
-      <v-alert
-        v-for="(error, key) in Errors"
-        :key="key"
-        color="error"
-        dense
-        dark
-        icon="mdi-information-outline"
-      >
-        {{ handleValidationErrors(key).message[0] }}
-      </v-alert>
       <v-form>
         <v-text-field
-          v-model="menu_name"
-          label="Menu Name"
-          hint="Unique Menu Name"
-          :error="handleValidationErrors('menu_name').has_error"
-          :error-message="handleValidationErrors('menu_name').has_error ? handleValidationErrors('menu_name').message : ''"
+          v-model="text"
+          label="Menu item text"
+          hint="Menu item visibile text"
+          :error="handleValidationErrors('text').has_error"
+          :rules="[! handleValidationErrors('text').has_error || handleValidationErrors('text').message]"
           solo
+          flat
           persistent-hint
           outlined
         />
         <v-text-field
-          v-model="component_name"
-          label="Component Name"
-          hint="Component Name Used in front end"
+          v-model="route"
+          label="Route"
+          hint="Route that clicking link moves you to"
+          :error="handleValidationErrors('route').has_error"
+          :rules="[! handleValidationErrors('route').has_error || handleValidationErrors('route').message]"
           solo
-          :error="handleValidationErrors('component_name').has_error"
-          :error-message="handleValidationErrors('component_name').has_error ? handleValidationErrors('component_name').message : ''"
+          flat
           persistent-hint
           outlined
         />
-        <v-checkbox
-          v-model="menu_state"
-          label="Active"
-          hint="Active Status For Menu"
+        <v-text-field
+          v-model="custom_class"
+          label="Custom class"
+          hint="custom class for the menu item"
+          solo
           persistent-hint
+          flat
+          outlined
+        />
+        <v-select
+          v-model="icon_family"
+          label="Icon Group"
+          hint="Icon Group used for this menu"
+          solo
+          persistent-hint
+          flat
+          outlined
+          :items="groups"
+          item-text="text"
+          item-value="value"
+        />
+        <v-select
+          v-model="icon_name"
+          label="Menu Icon"
+          hint="Icon used for this menu"
+          solo
+          clearable
+          persistent-hint
+          flat
+          outlined
+          :items="icons"
+          :prepend-inner-icon="`${icon_family}-${icon_name}`"
+          item-text="text"
+          item-value="value"
+        />
+        <v-select
+          v-model="type"
+          label="Menu type"
+          hint="type of the menu item"
+          solo
+          clearable
+          persistent-hint
+          flat
+          outlined
+          :items="types"
+        />
+        <v-select
+          v-model="parent_id"
+          label="Parent Menu"
+          hint="Parent Item of the created item"
+          solo
+          clearable
+          persistent-hint
+          item-text="text"
+          item-value="id"
+          flat
+          outlined
+          :items="menu.items"
         />
         <v-btn class="mt-2 rounded-0" color="success" block :loading="loading" @click="addMenu()">
           <v-icon class="mx-1">
@@ -77,24 +129,30 @@
 </template>
 <script>
 export default {
-  name: 'Menus',
+  name: 'SingleMenu',
   layout: 'admin',
   data () {
     return {
       loading: false,
-      menu_name: null,
-      component_name: null,
-      menu_state: null,
+      text: null,
+      route: null,
+      custom_class: null,
+      parent_id: null,
+      type: 'link',
+      icon_family: 'mdi',
+      icon_name: 'cog',
       menus: [],
       Errors: [],
       menu: {},
       icons: [],
       groups: [],
+      types: [],
       table_headers: [
         { text: 'id', value: 'id' },
-        { text: 'name', value: 'menu_name' },
-        { text: 'slug', value: 'slug' },
-        { text: 'status', value: 'active' },
+        { text: 'name', value: 'text' },
+        { text: 'route', value: 'route' },
+        { text: 'parent', value: 'ParentName' },
+        { text: 'type', value: 'type' },
         { text: 'options', value: 'options' }
       ]
     }
@@ -102,6 +160,10 @@ export default {
   async fetch () {
     this.loading = true
     this.menu = await this.$axios.$get(`/menus/show/${this.slug}`)
+    this.menus = await this.$axios.$get('/menus/list')
+    this.icons = await this.$axios.$get('/menus/icons/list')
+    this.groups = await this.$axios.$get('/menus/icons/groups/list')
+    this.types = await this.$axios.$get('/menus/types/list')
     this.loading = false
   },
   head: {
@@ -117,19 +179,30 @@ export default {
   computed: {
     slug () {
       return this.$route.params.slug
+    },
+    itemForm () {
+      return {
+        text: this.text,
+        route: this.route,
+        class: this.custom_class,
+        icon_name: this.icon_name,
+        icon_family: this.icon_family,
+        parent_id: this.parent_id,
+        menu_id: this.menu.id,
+        type: this.type
+      }
     }
   },
   methods: {
     addMenu () {
-      const data = {
-        menu_name: this.menu_name,
-        active: this.menu_state,
-        component_name: this.component_name
-      }
-      this.$axios.post('/menus/create', data).then(() => {
-        this.menu_name = null
-        this.menu_state = true
-        this.component_name = null
+      this.$axios.post('/menus/create/item', this.itemForm).then(() => {
+        this.text = null
+        this.route = null
+        this.custom_class = null
+        this.icon_name = null
+        this.icon_family = 'mdi'
+        this.parent_id = null
+        this.type = 'link'
         this.Errors = []
         this.$fetch()
       }).catch((err) => {
@@ -154,7 +227,7 @@ export default {
         cancelButtonText: 'الغاء الامر'
       }).then((result) => {
         if (result.isConfirmed) {
-          const uri = `/menus/delete/${slug}`
+          const uri = `/menus/delete/item/${slug}`
           this.$axios.get(uri).then(() => {
             this.$fetch()
             this.$swal.fire({

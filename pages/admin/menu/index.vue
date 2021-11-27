@@ -1,6 +1,16 @@
 <template>
   <v-row justify="center" align="center">
     <v-col cols="12" sm="12" md="12" lg="12">
+      <v-breadcrumbs
+        divider="/"
+        :items="[
+          {text: 'Home', disabled: false, href: '/'},
+          {text: 'Admin Panel', disabled: false, href: '/admin'},
+          {text: 'Menus', disabled: true, href: '/admin/menu'}
+        ]"
+      />
+    </v-col>
+    <v-col cols="12" sm="12" md="12" lg="12">
       <h3>Menu Manager</h3>
     </v-col>
     <v-col cols="8">
@@ -19,6 +29,11 @@
           <v-btn icon small :color="item.active ? 'warning' : 'success'" @click="item.active ? disableItem(item.slug) : enableItem(item.slug)">
             <v-icon>mdi-publish-off</v-icon>
           </v-btn>
+        </template>
+        <template #[`item.active`]="{ item }">
+          <v-icon :color="item.active ? 'green' : 'red' ">
+            mdi-circle
+          </v-icon>
         </template>
       </v-data-table>
     </v-col>
@@ -47,15 +62,18 @@
           persistent-hint
           outlined
         />
-        <v-text-field
+        <v-select
           v-model="component_name"
           label="Component Name"
           hint="Component Name Used in front end"
           solo
+          persistent-hint
+          flat
+          clearable
           :error="handleValidationErrors('component_name').has_error"
           :error-message="handleValidationErrors('component_name').has_error ? handleValidationErrors('component_name').message : ''"
-          persistent-hint
           outlined
+          :items="components"
         />
         <v-checkbox
           v-model="menu_state"
@@ -83,6 +101,7 @@ export default {
       component_name: null,
       menu_state: null,
       menus: [],
+      components: [],
       Errors: [],
       icons: [],
       groups: [],
@@ -90,6 +109,7 @@ export default {
         { text: 'id', value: 'id' },
         { text: 'name', value: 'menu_name' },
         { text: 'slug', value: 'slug' },
+        { text: 'component', value: 'component_name' },
         { text: 'status', value: 'active' },
         { text: 'options', value: 'options' }
       ]
@@ -98,7 +118,7 @@ export default {
   async fetch () {
     this.loading = true
     this.menus = await this.$axios.$get('/menus/list')
-    this.icons = await this.$axios.$get('/menus/icons/list')
+    this.components = await this.$axios.$get('/menus/components/list')
     this.groups = await this.$axios.$get('/menus/icons/groups/list')
     this.loading = false
   },

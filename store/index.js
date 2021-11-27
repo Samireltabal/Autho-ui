@@ -2,6 +2,7 @@ const store = {
   state: () => ({
     isLogged: false,
     token: '',
+    sideMenu: true,
     user: {},
     isLoading: false
   }),
@@ -22,11 +23,17 @@ const store = {
     Loading (state, loading) {
       state.isLoading = loading
     },
+    SetSideMenu (state, i) {
+      state.sideMenu = i
+    },
     setToken (state, token) {
       state.token = token
     }
   },
   actions: {
+    SetSideMenu (context, i) {
+      context.commit('SetSideMenu', i)
+    },
     login (context) {
       context.commit('login')
     },
