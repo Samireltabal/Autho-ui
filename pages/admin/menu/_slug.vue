@@ -12,12 +12,6 @@
       />
     </v-col>
     <v-col cols="8">
-      <v-treeview
-        :items="menu.tree"
-        item-children="children"
-        item-key="id"
-        item-text="text"
-      />
       <v-data-table
         :items="menu.items"
         :headers="table_headers"
@@ -26,9 +20,22 @@
           <v-btn icon small color="indigo" @click="viewItem(item.slug)">
             <v-icon>mdi-open-in-new</v-icon>
           </v-btn>
-          <v-btn small color="error" @click="deleteItem(item.id)">
-            <v-icon>mdi-link-variant-remove</v-icon> {{ item.id }}
+          <v-btn icon small color="error" @click="deleteItem(item.id)">
+            <v-icon>mdi-link-variant-remove</v-icon>
           </v-btn>
+        </template>
+        <template #[`item.visibility_level`]="{ item }">
+          <edit-visibility
+            :item="item"
+            :levels="levels"
+            @finished="$fetch()"
+          />
+        </template>
+        <template #[`item.order`]="{ item }">
+          <EditOrder :item="item" @finished="$fetch()" />
+        </template>
+        <template #[`item.ParentName`]="{ item }">
+          <edit-parent :item="item" :parent-name="item.ParentName" :menu-items="menu.items" @finished="$fetch()" />
         </template>
       </v-data-table>
     </v-col>
@@ -40,6 +47,7 @@
         <v-text-field
           v-model="text"
           label="Menu item text"
+          dense
           hint="Menu item visibile text"
           :error="handleValidationErrors('text').has_error"
           :rules="[! handleValidationErrors('text').has_error || handleValidationErrors('text').message]"
@@ -51,6 +59,7 @@
         <v-text-field
           v-model="route"
           label="Route"
+          dense
           hint="Route that clicking link moves you to"
           :error="handleValidationErrors('route').has_error"
           :rules="[! handleValidationErrors('route').has_error || handleValidationErrors('route').message]"
@@ -62,6 +71,7 @@
         <v-text-field
           v-model="custom_class"
           label="Custom class"
+          dense
           hint="custom class for the menu item"
           solo
           persistent-hint
@@ -71,6 +81,7 @@
         <v-select
           v-model="icon_family"
           label="Icon Group"
+          dense
           hint="Icon Group used for this menu"
           solo
           persistent-hint
@@ -83,6 +94,7 @@
         <v-select
           v-model="icon_name"
           label="Menu Icon"
+          dense
           hint="Icon used for this menu"
           solo
           clearable
@@ -97,6 +109,7 @@
         <v-select
           v-model="type"
           label="Menu type"
+          dense
           hint="type of the menu item"
           solo
           clearable
@@ -106,8 +119,21 @@
           :items="types"
         />
         <v-select
+          v-model="visibility_level"
+          label="Visibility Level"
+          dense
+          hint="For Who this item will be visible"
+          solo
+          clearable
+          persistent-hint
+          flat
+          outlined
+          :items="levels"
+        />
+        <v-select
           v-model="parent_id"
           label="Parent Menu"
+          dense
           hint="Parent Item of the created item"
           solo
           clearable
@@ -128,8 +154,16 @@
   </v-row>
 </template>
 <script>
+import EditOrder from '../../../components/Navigation/admin/EditOrder.vue'
+import EditParent from '../../../components/Navigation/admin/EditParent.vue'
+import EditVisibility from '../../../components/Navigation/admin/EditVisibility.vue'
 export default {
   name: 'SingleMenu',
+  components: {
+    EditOrder,
+    EditParent,
+    EditVisibility
+  },
   layout: 'admin',
   data () {
     return {
@@ -140,6 +174,7 @@ export default {
       parent_id: null,
       type: 'link',
       icon_family: 'mdi',
+      visibility_level: 'all',
       icon_name: 'cog',
       menus: [],
       Errors: [],
@@ -147,12 +182,15 @@ export default {
       icons: [],
       groups: [],
       types: [],
+      levels: [],
       table_headers: [
         { text: 'id', value: 'id' },
         { text: 'name', value: 'text' },
         { text: 'route', value: 'route' },
         { text: 'parent', value: 'ParentName' },
         { text: 'type', value: 'type' },
+        { text: 'visibility', value: 'visibility_level' },
+        { text: 'Order', value: 'order' },
         { text: 'options', value: 'options' }
       ]
     }
@@ -164,6 +202,7 @@ export default {
     this.icons = await this.$axios.$get('/menus/icons/list')
     this.groups = await this.$axios.$get('/menus/icons/groups/list')
     this.types = await this.$axios.$get('/menus/types/list')
+    this.levels = await this.$axios.$get('/menus/levels/list')
     this.loading = false
   },
   head: {
@@ -189,6 +228,7 @@ export default {
         icon_family: this.icon_family,
         parent_id: this.parent_id,
         menu_id: this.menu.id,
+        visibility_level: this.visibility_level,
         type: this.type
       }
     }

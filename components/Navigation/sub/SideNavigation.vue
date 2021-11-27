@@ -11,7 +11,7 @@
         :key="i"
       >
         <v-list-item
-          v-if="!item.HasChild"
+          v-if="!item.HasChild && handleVisibility(item.visibility_level)"
           :to="item.route"
           router
           exact
@@ -24,22 +24,17 @@
           </v-list-item-content>
         </v-list-item>
         <v-list-group
-          v-if="item.HasChild"
+          v-if="item.HasChild && handleVisibility(item.visibility_level)"
           no-action
+          class="mx-0"
         >
           <template #activator>
-            <v-list-tile>
-              <v-list-tile-content>
-                <v-list-item-action>
-                  <v-icon>{{ item.icon_family }}-{{ item.icon_name }}</v-icon>
-                </v-list-item-action>
-                <v-list-tile-title>
-                  <small>
-                    {{ item.text }}
-                  </small>
-                </v-list-tile-title>
-              </v-list-tile-content>
-            </v-list-tile>
+            <v-list-item-action>
+              <v-icon>{{ item.icon_family }}-{{ item.icon_name }}</v-icon>
+            </v-list-item-action>
+            <v-list-item-title>
+              {{ item.text }}
+            </v-list-item-title>
           </template>
           <v-list-item
             v-for="(child, key) in item.children"
@@ -51,9 +46,7 @@
             <v-list-item-action>
               <v-icon>{{ child.icon_family }}-{{ child.icon_name }}</v-icon>
             </v-list-item-action>
-            <v-list-item-content>
-              <v-list-item-title v-text="child.text" />
-            </v-list-item-content>
+            <v-list-item-title v-text="child.text" />
           </v-list-item>
         </v-list-group>
       </div>
@@ -94,6 +87,12 @@ export default {
       set (val) {
         this.$store.dispatch('SetSideMenu', val)
       }
+    },
+    role () {
+      return this.$store.state.auth.user.Role
+    },
+    loggedIn () {
+      return this.$store.state.auth.loggedIn
     }
   },
   methods: {
@@ -110,6 +109,19 @@ export default {
           break
         default:
           break
+      }
+    },
+    handleVisibility (level) {
+      if (level === 'all') {
+        return true
+      } else if (level === 'registered' && this.loggedIn) {
+        return true
+      } else if (level === 'admin_only' && this.role === 'admin') {
+        return true
+      } else if (level === 'guest_only' && !this.loggedIn) {
+        return true
+      } else {
+        return false
       }
     }
   }

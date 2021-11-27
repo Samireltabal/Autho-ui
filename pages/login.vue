@@ -97,7 +97,16 @@
                 </v-btn>
               </v-form>
             </v-card-text>
+            <v-card-text>
+              <v-alert color="indigo" outlined dark dense>
+                <span class="text-bold">
+                  admin data : <br>
+                  login : admin@example.com ,
+                  password : password
 
+                </span>
+              </v-alert>
+            </v-card-text>
             <!-- create new account  -->
             <v-card-text class="d-flex align-center justify-center flex-wrap mt-2">
               <span class="me-2">
