@@ -12,32 +12,36 @@
       />
     </v-col>
     <v-col cols="8">
-      <v-data-table
-        :items="menu.items"
-        :headers="table_headers"
-      >
-        <template #[`item.options`]="{ item }">
-          <v-btn icon small color="indigo" @click="viewItem(item.slug)">
-            <v-icon>mdi-open-in-new</v-icon>
-          </v-btn>
-          <v-btn icon small color="error" @click="deleteItem(item.id)">
-            <v-icon>mdi-link-variant-remove</v-icon>
-          </v-btn>
-        </template>
-        <template #[`item.visibility_level`]="{ item }">
-          <edit-visibility
-            :item="item"
-            :levels="levels"
-            @finished="$fetch()"
-          />
-        </template>
-        <template #[`item.order`]="{ item }">
-          <EditOrder :item="item" @finished="$fetch()" />
-        </template>
-        <template #[`item.ParentName`]="{ item }">
-          <edit-parent :item="item" :parent-name="item.ParentName" :menu-items="menu.items" @finished="$fetch()" />
-        </template>
-      </v-data-table>
+      <v-row>
+        <v-col cols="12">
+          <v-data-table
+            :items="menu.items"
+            :headers="table_headers"
+          >
+            <template #[`item.options`]="{ item }">
+              <v-btn icon small color="indigo" @click="viewItem(item.slug)">
+                <v-icon>mdi-open-in-new</v-icon>
+              </v-btn>
+              <v-btn icon small color="error" @click="deleteItem(item.id)">
+                <v-icon>mdi-link-variant-remove</v-icon>
+              </v-btn>
+            </template>
+            <template #[`item.visibility_level`]="{ item }">
+              <edit-visibility
+                :item="item"
+                :levels="levels"
+                @finished="$fetch()"
+              />
+            </template>
+            <template #[`item.order`]="{ item }">
+              <EditOrder :item="item" @finished="$fetch()" />
+            </template>
+            <template #[`item.ParentName`]="{ item }">
+              <edit-parent :item="item" :parent-name="item.ParentName" :menu-items="menu.items" @finished="$fetch()" />
+            </template>
+          </v-data-table>
+        </v-col>
+      </v-row>
     </v-col>
     <v-col cols="4">
       <h3 class="my-2">

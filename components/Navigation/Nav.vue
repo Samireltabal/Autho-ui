@@ -11,11 +11,13 @@
 <script>
 import FooterNavigation from './sub/FooterNavigation.vue'
 import SideNavigation from './sub/SideNavigation.vue'
+import TopLevelNavigation from './sub/TopLevelNavigation.vue'
 export default {
   name: 'Nav',
   components: {
     FooterNavigation,
-    SideNavigation
+    SideNavigation,
+    TopLevelNavigation
   },
   props: {
     navigationName: {

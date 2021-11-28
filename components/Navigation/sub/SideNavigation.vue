@@ -89,7 +89,7 @@ export default {
       }
     },
     role () {
-      return this.$store.state.auth.user.Role
+      return this.$store.state.auth.loggedIn ? this.$store.state.auth.user.Role : 'guest'
     },
     loggedIn () {
       return this.$store.state.auth.loggedIn
