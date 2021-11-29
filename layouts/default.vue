@@ -11,6 +11,9 @@
       <v-toolbar-title v-text="title" />
       <Nav navigation-name="top-level-menu-13" />
       <v-spacer />
+      <v-btn @click="subscribe">
+        {{ mqttConnected ? 'connected' : 'not connected' }}
+      </v-btn>
       <user-menu v-if="$auth.loggedIn" />
     </v-app-bar>
     <v-main>
@@ -30,6 +33,7 @@
 <script>
 import UserMenu from '../components/Main/UserMenu.vue'
 import Nav from '../components/Navigation/Nav.vue'
+import Emqx from '../plugins/mqtt'
 export default {
   components: {
     UserMenu,
@@ -38,6 +42,7 @@ export default {
   data () {
     return {
       clipped: false,
+      mqtt: null,
       fixed: false,
       items: [
         {
@@ -82,6 +87,36 @@ export default {
       set (val) {
         this.$store.dispatch('SetSideMenu', val)
       }
+    },
+    mqttConnected () {
+      return this.$mqtt.connected
+    }
+  },
+  watch: {
+    loggedIn: {
+      immediate: true,
+      handler () {
+        this.connect_ws()
+      }
+    }
+  },
+  mounted () {
+    if (this.loggedIn) {
+      this.connect_ws()
+    }
+  },
+  methods: {
+    connect_ws () {
+      this.mqtt = new Emqx(this.$store, process.env.NUXT_ENV_WS_HOST)
+      this.mqtt.connect()
+    },
+    subscribe () {
+      console.log(this.$mqtt)
+      this.$mqtt.subscribe('presence', function (err) {
+        if (!err) {
+          this.$mqtt.publish('presence', 'Hello mqtt')
+        }
+      })
     }
   }
 }
