@@ -11,9 +11,6 @@
       <v-toolbar-title v-text="title" />
       <Nav navigation-name="top-level-menu-13" />
       <v-spacer />
-      <v-btn @click="subscribe">
-        {{ mqttConnected ? 'connected' : 'not connected' }}
-      </v-btn>
       <user-menu v-if="$auth.loggedIn" />
     </v-app-bar>
     <v-main>
@@ -33,7 +30,6 @@
 <script>
 import UserMenu from '../components/Main/UserMenu.vue'
 import Nav from '../components/Navigation/Nav.vue'
-import Emqx from '../plugins/mqtt'
 export default {
   components: {
     UserMenu,
@@ -43,6 +39,7 @@ export default {
     return {
       clipped: false,
       mqtt: null,
+      client: null,
       fixed: false,
       items: [
         {
@@ -78,7 +75,7 @@ export default {
   },
   computed: {
     loggedIn () {
-      return this.$store.state.isLogged
+      return this.$auth.state.loggedIn
     },
     drawer: {
       get () {
@@ -88,35 +85,79 @@ export default {
         this.$store.dispatch('SetSideMenu', val)
       }
     },
-    mqttConnected () {
-      return this.$mqtt.connected
+    clientId () {
+      return this.$auth.user.email
+    },
+    username () {
+      return this.$auth.user.uuid
+    },
+    token () {
+      return this.$auth.strategy.token.get()
+    },
+    channels () {
+      return `/${this.username}/notifications`
     }
   },
   watch: {
     loggedIn: {
       immediate: true,
       handler () {
-        this.connect_ws()
+        this.start_session()
       }
     }
   },
   mounted () {
-    if (this.loggedIn) {
-      this.connect_ws()
-    }
+
   },
   methods: {
-    connect_ws () {
-      this.mqtt = new Emqx(this.$store, process.env.NUXT_ENV_WS_HOST)
-      this.mqtt.connect()
+    async connectWs () {
+      const options = {
+        keepalive: 60,
+        clientId: this.clientId,
+        protocolId: 'MQTT',
+        username: this.username,
+        password: this.token,
+        protocolVersion: 4,
+        clean: true,
+        reconnectPeriod: 1000,
+        connectTimeout: 30 * 1000,
+        will: {
+          topic: 'WillMsg',
+          payload: 'Connection Closed abnormally..!',
+          qos: 0,
+          retain: false
+        },
+        rejectUnauthorized: false
+      }
+      this.client = await this.$mqtt.connect(process.env.NUXT_ENV_WS_HOST, options)
+      return this.client
     },
-    subscribe () {
-      console.log(this.$mqtt)
-      this.$mqtt.subscribe('presence', function (err) {
-        if (!err) {
-          this.$mqtt.publish('presence', 'Hello mqtt')
+    start_session () {
+      const uuid = this.$auth.user.uuid
+      if (this.loggedIn) {
+        this.connectWs().then((instance) => {
+          instance.on('connect', function () {
+            console.log(this.channels)
+            instance.subscribe(`/${uuid}/notifications`, function (err) {
+              if (!err) {
+                instance.publish('presence', 'Hello mqtt')
+              }
+            })
+          })
+          instance.on('message', (topic, payload, packet) => {
+            this.$swal.fire(
+              topic,
+              payload.toString(),
+              'success'
+            )
+          })
+        })
+      }
+      if (!this.loggedIn) {
+        if (this.client) {
+          this.client.end()
         }
-      })
+      }
     }
   }
 }

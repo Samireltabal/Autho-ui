@@ -1,9 +1,10 @@
-import Vue from 'vue'
-import VueMqtt from 'vue-mqtt'
+import * as mqtt from 'mqtt'
 
 class Emqx {
   constructor (store, env) {
-    this.store = store
+    this.clientId = store.$auth.user.email
+    this.username = store.$auth.user.uuid
+    this.token = store.$auth.strategy.token.get()
     this.base = env
   }
 
@@ -11,18 +12,15 @@ class Emqx {
     console.log(this.base)
   }
 
-  connect () {
-    console.log(this.base)
-    const host = this.base
-    const store = this.store
+  async connect () {
     const options = {
       keepalive: 60,
-      clientId: store.$auth.user.email,
+      clientId: this.clientId,
       protocolId: 'MQTT',
-      username: store.$auth.user.uuid,
-      password: store.$auth.strategy.token.get(),
+      username: this.username,
+      password: this.token,
       protocolVersion: 4,
-      clean: true,
+      clean: false,
       reconnectPeriod: 1000,
       connectTimeout: 30 * 1000,
       will: {
@@ -34,7 +32,11 @@ class Emqx {
       rejectUnauthorized: false
     }
     console.log(options)
-    Vue.use(VueMqtt, host, options)
+    console.log(this.base)
+    this.mqtt = await mqtt.connect(this.base, options)
+    console.log('from plugin obj : ', this.mqtt)
+    console.log('connection status from plugin is :', this.mqtt.connected)
+    return this.mqtt
   }
 
   subscribe (topic) {
