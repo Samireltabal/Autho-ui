@@ -21,7 +21,7 @@
           v-bind="attrs"
           v-on="on"
         >
-          <v-img :src="user.Avatar" />
+          <v-img :src="user.avatar" />
         </v-avatar>
       </v-badge>
     </template>

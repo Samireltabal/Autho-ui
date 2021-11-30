@@ -84,6 +84,11 @@ export default {
           to: '/admin/menu'
         },
         {
+          icon: 'mdi-account-multiple',
+          title: 'Accounts',
+          to: '/admin/accounts'
+        },
+        {
           icon: 'mdi-login',
           title: 'Login',
           to: '/login'
@@ -99,7 +104,7 @@ export default {
           to: '/'
         }
       ],
-      miniVariant: true,
+      miniVariant: false,
       title: 'Admin Panel'
     }
   },

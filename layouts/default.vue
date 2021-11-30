@@ -11,6 +11,7 @@
       <v-toolbar-title v-text="title" />
       <Nav navigation-name="top-level-menu-13" />
       <v-spacer />
+      <Notifications />
       <user-menu v-if="$auth.loggedIn" />
     </v-app-bar>
     <v-main>
@@ -29,11 +30,13 @@
 
 <script>
 import UserMenu from '../components/Main/UserMenu.vue'
+import Notifications from '../components/Main/Notifications.vue'
 import Nav from '../components/Navigation/Nav.vue'
 export default {
   components: {
     UserMenu,
-    Nav
+    Nav,
+    Notifications
   },
   data () {
     return {
@@ -75,7 +78,7 @@ export default {
   },
   computed: {
     loggedIn () {
-      return this.$auth.state.loggedIn
+      return this.$auth.$state.loggedIn
     },
     drawer: {
       get () {
@@ -122,10 +125,10 @@ export default {
         reconnectPeriod: 1000,
         connectTimeout: 30 * 1000,
         will: {
-          topic: 'WillMsg',
-          payload: 'Connection Closed abnormally..!',
+          topic: '/' + this.username + '/state',
+          payload: 'Offline',
           qos: 0,
-          retain: false
+          retain: true
         },
         rejectUnauthorized: false
       }
@@ -133,18 +136,19 @@ export default {
       return this.client
     },
     start_session () {
-      const uuid = this.$auth.user.uuid
       if (this.loggedIn) {
+        const uuid = this.$auth.user.uuid
+        const onlineMessage = { message: 'online' }
         this.connectWs().then((instance) => {
           instance.on('connect', function () {
-            console.log(this.channels)
             instance.subscribe(`/${uuid}/notifications`, function (err) {
               if (!err) {
-                instance.publish('presence', 'Hello mqtt')
+                instance.publish(`/${uuid}/state`, JSON.stringify(onlineMessage))
               }
             })
           })
           instance.on('message', (topic, payload, packet) => {
+            this.$auth.fetchUser()
             this.$swal.fire(
               topic,
               payload.toString(),
