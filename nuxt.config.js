@@ -30,6 +30,7 @@ export default {
   // Plugins to run before rendering page: https://go.nuxtjs.dev/config-plugins
   plugins: [
     '~/plugins/luxon.js',
+    { src: '~/plugins/textEditor.js', mode: 'client' },
     { src: '~/plugins/ws.js', mode: 'client' }
   ],
 

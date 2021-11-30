@@ -37,7 +37,7 @@
           dot
         >
           <v-avatar size="40px">
-            <v-img :src="user.Avatar" />
+            <v-img :src="user.avatar" />
           </v-avatar>
         </v-badge>
         <div
@@ -48,7 +48,7 @@
             {{ user.name }}
           </span>
           <small class="text--disabled text-capitalize">
-            {{ user.Role }}
+            {{ user.role }}
           </small>
         </div>
       </div>
@@ -56,7 +56,7 @@
       <v-divider />
 
       <!-- Profile -->
-      <v-list-item link>
+      <v-list-item link to="/profile">
         <v-list-item-icon class="me-2">
           <v-icon size="22">
             mdi-account-outline
