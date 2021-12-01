@@ -31,6 +31,7 @@ export default {
   plugins: [
     '~/plugins/luxon.js',
     { src: '~/plugins/textEditor.js', mode: 'client' },
+    { src: '~/plugins/vue-core-image-upload.js', mode: 'client' },
     { src: '~/plugins/ws.js', mode: 'client' }
   ],
 

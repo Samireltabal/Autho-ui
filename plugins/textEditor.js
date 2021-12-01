@@ -1,23 +1,16 @@
 import Vue from 'vue'
-import Vueditor from 'vueditor'
+import Vuetify from 'vuetify'
+import { TiptapVuetifyPlugin } from 'tiptap-vuetify'
+// don't forget to import CSS styles
+import 'tiptap-vuetify/dist/main.css'
+import 'vuetify/dist/vuetify.min.css'
 
-import 'vueditor/dist/style/vueditor.min.css'
-
-const config = {
-  toolbar: [
-    'removeFormat', 'undo', '|', 'elements', 'fontName', 'fontSize', 'foreColor', 'backColor', 'divider',
-    'bold', 'italic', 'underline', 'strikeThrough', 'links', 'divider', 'subscript', 'superscript',
-    'divider', 'justifyLeft', 'justifyCenter', 'justifyRight', 'justifyFull', '|', 'indent', 'outdent',
-    'insertOrderedList', 'insertUnorderedList', '|', 'picture', 'tables', '|', 'switchView'
-  ],
-  id: 'editorInstance',
-  fontName: [
-    { val: 'arial black' },
-    { val: 'times new roman' },
-    { val: 'Courier New' }
-  ],
-  fontSize: ['12px', '14px', '16px', '18px', '0.8rem', '1.0rem', '1.2rem', '1.5rem', '2.0rem'],
-  uploadUrl: ''
-}
-
-Vue.use(Vueditor, config)
+// Vuetify Object (as described in the Vuetify 2 documentation)
+const vuetify = new Vuetify()
+Vue.use(Vuetify)
+Vue.use(TiptapVuetifyPlugin, {
+  // the next line is important! You need to provide the Vuetify Object to this place.
+  vuetify, // same as "vuetify: vuetify"
+  // optional, default to 'md' (default vuetify icons before v2.0.0)
+  iconsGroup: 'mdi'
+})
