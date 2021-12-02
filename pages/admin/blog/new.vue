@@ -48,12 +48,12 @@
                 <span>Tags :</span>
                 <v-select
                   v-model="selected_tags"
-                  label="Categories"
+                  label="Tags"
                   class="my-1"
                   multiple
                   :items="categories"
                   item-text="text"
-                  item-value="value"
+                  item-value="text"
                   solo
                   outlined
                   flat
@@ -136,7 +136,9 @@ export default {
     form () {
       return {
         title: this.title,
-        content: this.content
+        content: this.content,
+        selected_tags: this.selected_tags,
+        category_id: this.category_id
       }
     },
     uploadHeader () {

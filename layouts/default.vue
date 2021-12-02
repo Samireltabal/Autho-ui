@@ -1,6 +1,6 @@
 <template>
   <v-app class="main_app">
-    <Nav navigation-name="main-navigation-3" />
+    <Nav :navigation-name="default_side_menu" />
     <v-app-bar
       :clipped-left="clipped"
       fixed
@@ -79,6 +79,9 @@ export default {
   computed: {
     loggedIn () {
       return this.$auth.$state.loggedIn
+    },
+    default_side_menu () {
+      return process.env.NUXT_ENV_DEFAULT_SIDE_NAV || 'main-navigation-3'
     },
     drawer: {
       get () {
