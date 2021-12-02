@@ -1,6 +1,6 @@
 <template>
   <v-app class="main_app">
-    <Nav navigation-name="general-side-menu-12" />
+    <Nav navigation-name="main-navigation-3" />
     <v-app-bar
       :clipped-left="clipped"
       fixed

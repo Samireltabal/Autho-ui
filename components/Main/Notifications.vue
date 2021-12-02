@@ -68,7 +68,11 @@ export default {
   },
   computed: {
     user () {
-      return this.$auth.user
+      const data = {
+        unread_notifications: [],
+        notifications: []
+      }
+      return this.$auth.user ? this.$auth.user : data
     }
   },
   methods: {
